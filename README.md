@@ -15,7 +15,6 @@ Necessita di:
 - Un cervello e un paio di mani
 
 Ricorda:
-
 Se lo sapresti fare meglio sei invitato a modificarlo, se invece vuoi solo chiedermi o consigliarmi qualcosa puoi
 contattarmi all'indirizzo leproide@paranoici.org
 Se lo ritieni necessario trovi la mia chiave pgp a questo indirizzo:
