@@ -18,6 +18,7 @@ Necessita di:
 Ricorda:
 Se lo sapresti fare meglio sei invitato a modificarlo, se invece vuoi solo chiedermi o consigliarmi qualcosa puoi
 contattarmi all'indirizzo leproide@paranoici.org
+
 Se lo ritieni necessario trovi la mia chiave pgp a questo indirizzo:
 https://pgp.mit.edu/pks/lookup?op=get&search=0x8FF24099181CE01E
 
