@@ -6,13 +6,13 @@ Lo script viene rilasciato senza garanzia alcuna e sotto licenza GPL v.3 come ri
 Ogni ridistribuzione, modifica o utilizzo va accompagnata con i giusti crediti al creatore.
 
 Dipendenze:
-- -wash
-- -reaver fork (https://github.com/t6x/reaver-wps-fork-t6x)
-- -pixiewps (https://github.com/wiire/pixiewps)
+-wash
+-reaver fork (https://github.com/t6x/reaver-wps-fork-t6x)
+-pixiewps (https://github.com/wiire/pixiewps)
 
 Necessita di:
-- -Un adattatore di rete compatibile (Es. TP-LINK TL-WN722N)
-- -Un cervello e un paio di mani
+-Un adattatore di rete compatibile (Es. TP-LINK TL-WN722N)
+-Un cervello e un paio di mani
 
 Ricorda:
 Se lo sapresti fare meglio sei invitato a modificarlo, se invece vuoi solo chiedermi o consigliarmi qualcosa puoi
