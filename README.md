@@ -1,6 +1,7 @@
 # E-WPS
 The easiest way to crack WPS
 
+
 E-WPS necessita di avvio con utente root.
 Lo script viene rilasciato senza garanzia alcuna e sotto licenza GPL v.3 come riportato nel sorgente stesso.
 Ogni ridistribuzione, modifica o utilizzo va accompagnata con i giusti crediti al creatore.
