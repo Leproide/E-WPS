@@ -11,10 +11,11 @@ Dipendenze:
 - pixiewps (https://github.com/wiire/pixiewps)
 
 Necessita di:
--Un adattatore di rete compatibile (Es. TP-LINK TL-WN722N)
--Un cervello e un paio di mani
+- Un adattatore di rete compatibile (Es. TP-LINK TL-WN722N)
+- Un cervello e un paio di mani
 
 Ricorda:
+
 Se lo sapresti fare meglio sei invitato a modificarlo, se invece vuoi solo chiedermi o consigliarmi qualcosa puoi
 contattarmi all'indirizzo leproide@paranoici.org
 Se lo ritieni necessario trovi la mia chiave pgp a questo indirizzo:
