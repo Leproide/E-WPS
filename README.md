@@ -48,7 +48,7 @@ affidabilità dello scan, mantenendo identico il flusso d'uso.
 | Rilevamento interfacce | `ifconfig \| grep wl` (deprecato/assente) | `iw dev` |
 | Modalità monitor | `iwconfig … mode monitor` (deprecato/assente) | `iw dev … set type monitor` |
 | Lettura stato/mode | `iwconfig` | `iw dev … info` |
-| Check root | `if [ “$(id -u)” … ]` con **virgolette tipografiche** → script non parte mai | `if [ "$(id -u)" … ]` ASCII corretto |
+| Check root | `if [ “$(id -u)” … ]` con **virgolette tipografiche** | `if [ "$(id -u)" … ]` ASCII corretto |
 | Dipendenze | nessun controllo | check di `iw`, `ip`, `wash`, `reaver` + opzionali |
 | Scan reti | `wash -i` → su driver come `ath9k_htc` resta **fermo su un canale** | `airodump-ng --wps` (channel hopping affidabile, colonna WPS/Locked) con fallback `wash -i … -C` (ignora FCS) |
 | Processi interferenti | nessuna gestione | `kill_interfering`: `airmon-ng check kill` se presente, altrimenti `nmcli dev set … managed no` + `systemctl stop wpa_supplicant` |
