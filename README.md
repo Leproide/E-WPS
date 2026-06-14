@@ -1,6 +1,6 @@
 # E-WPS
 
-**The easiest way to crack WPS** — wrapper Bash attorno a `wash` / `reaver` / `airodump-ng` per il testing del WPS su reti **proprie**.
+**The easiest way to crack WPS** wrapper Bash attorno a `wash` / `reaver` / `airodump-ng` per il testing del WPS su reti **proprie**.
 
 > ⚠️ **Uso consentito SOLO su reti di tua proprietà o per cui hai un'autorizzazione
 > scritta del proprietario.** L'accesso non autorizzato a reti altrui è un reato
