@@ -122,6 +122,3 @@ termini della licenza. Il programma è fornito SENZA ALCUNA GARANZIA. Vedi il fi
 ## Author
 
 [https://github.com/Leproide](https://github.com/Leproide)
-
-E-Mail: leproide@paranoici.org
-PGP: <https://pgp.mit.edu/pks/lookup?op=get&search=0x8FF24099181CE01E>
